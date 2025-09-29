@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Charging Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom style for gradient and animation */
+        @keyframes charge-animation {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        .battery-level-animated {
+            /* The animation will be triggered by adding this class */
+            animation: charge-animation 5s linear forwards;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-700 to-blue-900 flex items-center justify-center h-screen font-sans text-gray-200">
+
+    <div class="w-full max-w-xs mx-auto p-4">
+        <h1 class="text-2xl font-bold text-center mb-6">Battery Charging</h1>
+
+        <!-- Battery Container -->
+        <div class="relative w-48 h-24 bg-slate-800 border-2 border-gray-500 rounded-2xl mx-auto flex items-center justify-center p-2 shadow-lg">
+            
+            <!-- Battery Terminal -->
+            <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-3 h-10 bg-gray-500 rounded-r-md"></div>
+            
+            <!-- Charge Level -->
+            <div id="battery-level-container" class="w-full h-full bg-slate-600 rounded-lg overflow-hidden">
+                <div id="battery-level" class="h-full w-0 bg-gradient-to-r from-red-500 to-rose-600 rounded-lg transition-colors duration-500"></div>
+            </div>
+
+            <!-- Percentage Text -->
+            <div id="percentage" class="absolute inset-0 flex items-center justify-center text-3xl font-bold text-white mix-blend-difference">
+                0%
+            </div>
+        </div>
+        
+        <p id="status" class="text-center mt-4 text-gray-400 h-6">Click "Start" to charge</p>
+
+        <!-- Control Buttons -->
+        <div class="flex justify-center space-x-4 mt-6">
+            <button id="charge-button" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:bg-gray-500 disabled:cursor-not-allowed">
+                Start
+            </button>
+            <button id="reset-button" class="px-6 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-rose-400">
+                Reset
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // This event listener ensures that the JavaScript code runs only after the entire HTML document has been loaded and parsed.
+        // This prevents errors on mobile or slow connections where the script might try to find elements before they exist on the page.
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM fully loaded. Initializing script.");
+
+            const batteryLevel = document.getElementById('battery-level');
+            const percentageText = document.getElementById('percentage');
+            const statusText = document.getElementById('status');
+            const chargeButton = document.getElementById('charge-button');
+            const resetButton = document.getElementById('reset-button');
+            
+            // Check if buttons were found
+            if (!chargeButton || !resetButton) {
+                console.error("Error: Could not find control buttons on the page.");
+                return;
+            }
+
+            let counterInterval = null; // To hold the interval ID
+
+            function startCharging() {
+                console.log("Start button clicked.");
+                // Disable the button to prevent multiple starts
+                chargeButton.disabled = true;
+                statusText.textContent = 'Charging...';
+                statusText.classList.remove('text-green-400', 'font-semibold');
+                statusText.classList.add('text-gray-400');
+                
+                // Add class to start CSS animation
+                batteryLevel.classList.add('battery-level-animated');
+
+                let charge = 0;
+                const animationDuration = 5000; // 5 seconds
+                const intervalTime = animationDuration / 100;
+
+                // Interval to update the percentage text and colors
+                counterInterval = setInterval(() => {
+                    if (charge < 100) {
+                        charge++;
+                        percentageText.textContent = `${charge}%`;
+                        
+                        // Change color based on charge level
+                        if (charge === 20) {
+                            batteryLevel.classList.remove('from-red-500', 'to-rose-600');
+                            batteryLevel.classList.add('from-yellow-400', 'to-orange-500');
+                        } else if (charge === 50) {
+                            batteryLevel.classList.remove('from-yellow-400', 'to-orange-500');
+                            batteryLevel.classList.add('from-green-400', 'to-emerald-500');
+                        }
+
+                    } else {
+                        percentageText.textContent = `100%`;
+                        statusText.textContent = 'Battery Fully Charged!';
+                        statusText.classList.remove('text-gray-400');
+                        statusText.classList.add('text-green-400', 'font-semibold');
+                        clearInterval(counterInterval);
+                    }
+                }, intervalTime);
+            }
+
+            function resetAnimation() {
+                console.log("Reset button clicked.");
+                // Stop any ongoing animation interval
+                clearInterval(counterInterval);
+                
+                // Re-enable the start button
+                chargeButton.disabled = false;
+                
+                // Reset visual state
+                batteryLevel.classList.remove('battery-level-animated', 'from-yellow-400', 'to-orange-500', 'from-green-400', 'to-emerald-500');
+                batteryLevel.classList.add('from-red-500', 'to-rose-600');
+                
+                // Force a DOM reflow to allow re-triggering the animation
+                void batteryLevel.offsetWidth; 
+
+                // Reset styles and text
+                percentageText.textContent = '0%';
+                statusText.textContent = 'Click "Start" to charge';
+                statusText.classList.remove('text-green-400', 'font-semibold');
+                statusText.classList.add('text-gray-400');
+            }
+
+            // Attach event listeners
+            chargeButton.addEventListener('click', startCharging);
+            resetButton.addEventListener('click', resetAnimation);
+            console.log("Event listeners attached to buttons.");
+        });
+    </script>
+
+</body>
+</html>
+
